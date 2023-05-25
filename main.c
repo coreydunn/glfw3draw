@@ -1,35 +1,17 @@
-#include <GL/gl.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
-#include <assert.h>
-#include <math.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <time.h>
-#include <unistd.h>
+#include<GL/gl.h>
+#include<SDL2/SDL.h>
+#include<SDL2/SDL_opengl.h>
+#include<assert.h>
+#include<math.h>
+#include<stdbool.h>
+#include<stdint.h>
+#include<stdio.h>
+#include<time.h>
+#include<unistd.h>
 
 void draw_pixels(uint32_t*pixels,GLuint texture,uint32_t width,uint32_t height);
 void load_pixels(uint32_t*pixels,GLuint*texture,uint32_t width,uint32_t height);
-
-void renderScene(void)
-{
-	GLfloat x, y, angle;
-	int curSize=1;
-
-	glClear(GL_COLOR_BUFFER_BIT);
-	for(angle = 0.0f; angle <= (2.0f * M_PI); angle += 0.1f)
-	{
-		x = 50.0f * sin(angle);
-		y = 50.0f * cos(angle);
-		glPointSize(curSize);
-		glBegin( GL_POINTS);
-		glVertex3f(x, y, 0.0f);
-		glEnd();
-		curSize+=1;
-	}
-	/* glutSwapBuffers(); */
-}
+void renderScene(void);
 
 #define WIDTH 320
 #define HEIGHT 240
@@ -59,17 +41,14 @@ int main (int argc, char **argv)
 
 	srand(time(NULL));
 
-	// Create, load texture
-	for(int i=0;i<16*16;++i)
+	for(int i=0,j=0xff;i<16*16;++i)
 	{
-		/* int red=rand()%0xff; */
-		/* int green=rand()%0xff; */
-		/* int blue=rand()%0xff; */
-		int red=0;
-		int green=0;
-		int blue=0xff;
-		pixels[i]=0xff;
-		/* pixels[i]=(red<<24)|(green<<16)|(blue); */
+		unsigned char red=rand()%256;
+		unsigned char green=rand()%256;
+		unsigned char blue=rand()%256;
+		unsigned char alpha=0;
+
+		pixels[i]=(red<<24)|(green<<16)|(blue<<8)|(alpha);
 	}
 	glGenTextures(1,&tex);
 	load_pixels(pixels,&tex,16,16);
@@ -169,6 +148,7 @@ void draw_pixels(uint32_t*pixels,GLuint texture,uint32_t width,uint32_t height)
 
 	glBegin(GL_QUADS);
 
+	glColor3f(1,1,1);
 	glTexCoord2f(0.0, 0.0);
 	glVertex2f(0.0, 0.0);
 
@@ -199,4 +179,23 @@ void load_pixels(uint32_t*pixels,GLuint*texture,uint32_t width,uint32_t height)
 	else
 		printf("Failed to load texture\n");
 	glBindTexture(GL_TEXTURE_2D,0);
+}
+
+void renderScene(void)
+{
+	GLfloat x, y, angle;
+	int curSize=1;
+
+	glClear(GL_COLOR_BUFFER_BIT);
+	for(angle = 0.0f; angle <= (2.0f * M_PI); angle += 0.1f)
+	{
+		x = 50.0f * sin(angle);
+		y = 50.0f * cos(angle);
+		glPointSize(curSize);
+		glBegin( GL_POINTS);
+		glVertex3f(x, y, 0.0f);
+		glEnd();
+		curSize+=1;
+	}
+	/* glutSwapBuffers(); */
 }
