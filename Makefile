@@ -1,5 +1,5 @@
-CFLAGS=   -Wfatal-errors $(shell pkgconf --cflags sdl2 opengl)
-LDFLAGS=  -lm $(shell pkgconf --libs sdl2 opengl)
+CFLAGS=   -Wfatal-errors $(shell pkgconf --cflags glfw3 opengl)
+LDFLAGS=  -lm $(shell pkgconf --libs glfw3 opengl)
 OBJS=     sdlgl
 
 all: $(OBJS)
