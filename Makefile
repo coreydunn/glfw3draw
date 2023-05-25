@@ -1,9 +1,9 @@
 CFLAGS=   -Wfatal-errors $(shell pkgconf --cflags glfw3 opengl)
 LDFLAGS=  -lm $(shell pkgconf --libs glfw3 opengl)
-OBJS=     sdlgl
+OBJS=     glfw3draw
 
 all: $(OBJS)
-sdlgl: main.c
+glfw3draw: main.c
 	$(CC) $^ -o $@ $(CFLAGS) $(LDFLAGS)
 clean:
 	$(RM) $(OBJS)
