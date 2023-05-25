@@ -12,6 +12,7 @@
 #define IMAGE_MAX_WIDTH 1024
 #define IMAGE_MAX_HEIGHT 1024
 
+void update_mouse_pos(void);
 void draw_pixels(uint32_t*pixels,GLuint texture,uint32_t width,uint32_t height,uint32_t x,uint32_t y);
 void error_callback(int error, const char* description);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -20,17 +21,20 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 static double mouse_x=0;
 static double mouse_y=0;
+static double mouse_x_old=0;
+static double mouse_y_old=0;
+static uint32_t mouse_mlb=false;
 static int32_t pixels[IMAGE_MAX_WIDTH*IMAGE_MAX_HEIGHT]={0};
 static uint32_t image_height=256;
 static uint32_t image_width=256;
 static uint32_t window_height=480;
 static uint32_t window_width=640;
 static uint32_t redraw=true;
+static GLFWwindow* glfwwindow;
 
 int main(void)
 {
 
-	GLFWwindow* window;
 	GLuint tex;
 	int32_t running=true;
 
@@ -39,13 +43,14 @@ int main(void)
 	// GLFW3
 	glfwInit();
 	glfwSetErrorCallback(error_callback);
-	window=glfwCreateWindow(window_width, window_height, "My Title", NULL, NULL);
-	glfwMakeContextCurrent(window);
-	glfwGetFramebufferSize(window, &window_width, &window_height);
+	glfwwindow=glfwCreateWindow(window_width, window_height, "My Title", NULL, NULL);
+	glfwMakeContextCurrent(glfwwindow);
+	glfwGetFramebufferSize(glfwwindow, &window_width, &window_height);
 	glViewport(0, 0, window_width, window_height);
-	glfwSetKeyCallback(window, key_callback);
-	glfwSetMouseButtonCallback(window, mouse_button_callback);
+	glfwSetKeyCallback(glfwwindow, key_callback);
+	glfwSetMouseButtonCallback(glfwwindow, mouse_button_callback);
 	glfwSwapInterval(1);
+	glfwSetWindowAttrib(glfwwindow, GLFW_RESIZABLE, GLFW_FALSE);
 
 	// OpenGL
 	glMatrixMode(GL_PROJECTION);
@@ -62,11 +67,20 @@ int main(void)
 	load_pixels(pixels,&tex,image_width,image_height);
 
 	// Main loop
-	while (!glfwWindowShouldClose(window))
+	while (!glfwWindowShouldClose(glfwwindow))
 	{
 		glfwPollEvents();
 
-		glfwGetCursorPos(window,&mouse_x,&mouse_y);
+		if(mouse_mlb>0)
+		{
+			if(mouse_x<image_width&&mouse_y<image_height)
+			{
+				update_mouse_pos();
+				pixels[(uint32_t)mouse_y*(uint32_t)image_width+(uint32_t)mouse_x]=0;
+				//printf("mouse_x: %0.2f\nmouse_y: %0.2f\n",mouse_x,mouse_y);
+				redraw=true;
+			}
+		}
 
 		// Render
 		if(redraw)
@@ -82,11 +96,11 @@ int main(void)
 		draw_pixels(pixels,tex,image_width,image_height,0,0);
 
 		glFlush();
-		glfwSwapBuffers(window);
+		glfwSwapBuffers(glfwwindow);
 		usleep(20000);
 	}
 
-	glfwDestroyWindow(window);
+	glfwDestroyWindow(glfwwindow);
 	glfwTerminate();
 }
 
@@ -164,18 +178,26 @@ void draw_pixels(uint32_t*pixels,GLuint texture,uint32_t width,uint32_t height,u
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+void update_mouse_pos(void)
+{
+	mouse_x_old=mouse_x;
+	mouse_y_old=mouse_y;
+	glfwGetCursorPos(glfwwindow,&mouse_x,&mouse_y);
+}
+
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
-	glfwGetCursorPos(window,&mouse_x,&mouse_y);
 
 	if(button==GLFW_MOUSE_BUTTON_LEFT&&action==GLFW_PRESS)
 	{
-		if(mouse_x<image_width&&mouse_y<image_height)
-		{
-			pixels[(uint32_t)mouse_y*(uint32_t)image_width+(uint32_t)mouse_x]=0;
-			printf("mouse_x: %0.2f\nmouse_y: %0.2f\n",mouse_x,mouse_y);
-			redraw=true;
-		}
+		mouse_mlb=1;
+		printf("mouse_mlb: %d\n",mouse_mlb);
+	}
+
+	else if(button==GLFW_MOUSE_BUTTON_LEFT&&action==GLFW_RELEASE)
+	{
+		mouse_mlb=0;
+		printf("mouse_mlb: %d\n",mouse_mlb);
 	}
 
 }
