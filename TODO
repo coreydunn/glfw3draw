@@ -1,4 +1,6 @@
 # vim: ft=markdown
 
 What to do:
+- [ ] Test image/color fidelity
 - [ ] Load CSV file
+- [ ] Load binary file

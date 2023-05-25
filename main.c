@@ -26,7 +26,7 @@ int main (int argc, char **argv)
 	double dx=160.0;
 	double dy=120.0;
 	int32_t fullscreen=false;
-	int32_t pixels[16*16]={0};
+	int32_t pixels[256*256]={0};
 	int32_t running=true;
 
 	window = SDL_CreateWindow("OpenGL Test", 0, 0, WIDTH, HEIGHT, SDL_WINDOW_OPENGL);
@@ -41,7 +41,7 @@ int main (int argc, char **argv)
 
 	srand(time(NULL));
 
-	for(int i=0,j=0xff;i<16*16;++i)
+	for(int i=0,j=0xff;i<256*256;++i)
 	{
 		unsigned char red=rand()%256;
 		unsigned char green=rand()%256;
@@ -51,7 +51,7 @@ int main (int argc, char **argv)
 		pixels[i]=(red<<24)|(green<<16)|(blue<<8)|(alpha);
 	}
 	glGenTextures(1,&tex);
-	load_pixels(pixels,&tex,16,16);
+	load_pixels(pixels,&tex,256,256);
 
 	while (running)
 	{
@@ -94,45 +94,7 @@ int main (int argc, char **argv)
 		glClearColor(0.5,0.5,0.5,0.0);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glColor3f(0.0f, 0.0f, 1.0f); // Let it be blue
-		glBegin(GL_QUADS); // 2x2 pixels
-		glVertex2f(1.0f, 1.0f);
-		glVertex2f(2.0f, 1.0f);
-		glVertex2f(2.0f, 2.0f);
-		glVertex2f(1.0f, 2.0f);
-		glEnd();
-
-		glColor3f(1.0f, 1.0f, 0.0f); // Let it be yellow.
-		glBegin(GL_LINE_STRIP);
-		glVertex2f(0.5f, 0.5f);
-		glVertex2f(2.5f, 0.5f);
-		glVertex2f(2.5f, 2.5f);
-		glVertex2f(0.5f, 2.5f);
-		glVertex2f(0.5f, 0.5f);
-		glEnd();
-		glFlush();
-
-		glBegin( GL_POINTS);
-		glVertex3f(0.0f, 0.0f, 0.0f);
-		glVertex3f(50.0f, 40.0f, 0.0f);
-		glVertex3f(50.0f, 50.0f, 50.0f);
-		glEnd();
-		glFlush();
-
-		GLfloat x,y,angle;
-		glClear(GL_COLOR_BUFFER_BIT);
-		glBegin(GL_POINTS);
-		for(angle=0.0f;angle<=(2.0f*M_PI);angle+=0.01f)
-		{
-			x=dx+50.0f*sin(angle);
-			y=dy+50.0f*cos(angle);
-			glVertex3f(x,y,0.0f);
-		}
-		glEnd();
-
-		renderScene();
-
-		draw_pixels(pixels,tex,16,16);
+		draw_pixels(pixels,tex,256,256);
 
 		glFlush();
 		SDL_GL_SwapWindow(window);
