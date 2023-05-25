@@ -111,10 +111,25 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	{
 		switch(key)
 		{
+
 			case GLFW_KEY_ESCAPE:
 			case GLFW_KEY_Q:
 				glfwSetWindowShouldClose(window,GLFW_TRUE);
 				break;
+
+			case GLFW_KEY_SPACE:
+				for(int i=0;i<image_width*image_height;++i)
+				{
+					unsigned char red=rand()%256;
+					unsigned char green=rand()%256;
+					unsigned char blue=rand()%256;
+					unsigned char alpha=0;
+
+					pixels[i]=(red<<24)|(green<<16)|(blue<<8)|(alpha);
+				}
+				redraw=true;
+				break;
+
 		}
 	}
 }
