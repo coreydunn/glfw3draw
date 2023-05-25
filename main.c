@@ -23,8 +23,6 @@ int main (int argc, char **argv)
 	SDL_Event event;
 	SDL_GLContext context;
 	SDL_Window *window;
-	double dx=160.0;
-	double dy=120.0;
 	int32_t fullscreen=false;
 	int32_t pixels[256*256]={0};
 	int32_t running=true;
@@ -69,11 +67,16 @@ int main (int argc, char **argv)
 						break;
 
 					case SDLK_SPACE:
-						if(dx==0.0)dx=160.0;
-						else dx=0.0;
-						if(dy==0.0)dy=120.0;
-						else dy=0.0;
-						printf("(%0.2f,%0.2f)\n",dx,dy);
+						for(int i=0;i<256*256;++i)
+						{
+							unsigned char red=rand()%256;
+							unsigned char green=rand()%256;
+							unsigned char blue=rand()%256;
+							unsigned char alpha=0;
+
+							pixels[i]=(red<<24)|(green<<16)|(blue<<8)|(alpha);
+						}
+						load_pixels(pixels,&tex,256,256);
 						break;
 
 					case 'f':
