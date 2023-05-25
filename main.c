@@ -15,6 +15,8 @@ void renderScene(void);
 
 #define WIDTH 640
 #define HEIGHT 480
+#define IMAGE_MAX_WIDTH 1024
+#define IMAGE_MAX_HEIGHT 1024
 
 int main (int argc, char **argv)
 {
@@ -24,12 +26,18 @@ int main (int argc, char **argv)
 	SDL_GLContext context;
 	SDL_Window *window;
 	int32_t fullscreen=false;
-	int32_t pixels[256*256]={0};
+	int32_t redraw=true;
 	int32_t running=true;
-	uint32_t window_width=640;
+	uint32_t image_height=256;
+	uint32_t image_width=256;
+	uint32_t mouse_x=0;
+	uint32_t mouse_y=0;
 	uint32_t window_height=480;
+	uint32_t window_width=640;
 
-	window=SDL_CreateWindow("OpenGL Test",0,0,WIDTH,HEIGHT,SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
+	int32_t pixels[IMAGE_MAX_WIDTH*IMAGE_MAX_HEIGHT]={0};
+
+	window=SDL_CreateWindow("OpenGL Test",0,0,WIDTH,HEIGHT,SDL_WINDOW_OPENGL);
 	context=SDL_GL_CreateContext(window);
 
 	glMatrixMode(GL_PROJECTION);
@@ -42,64 +50,83 @@ int main (int argc, char **argv)
 
 	srand(time(NULL));
 
-	for(int i=0,j=0xff;i<256*256;++i)
+	for(int i=0,j=0xff;i<image_width*image_height;++i)
 		pixels[i]=0xffffff00;
 	glGenTextures(1,&tex);
-	load_pixels(pixels,&tex,256,256);
+	load_pixels(pixels,&tex,image_width,image_height);
 
 	while (running)
 	{
 		while (SDL_PollEvent(&event))
 		{
-			if (event.type == SDL_KEYDOWN)
+			switch(event.type)
 			{
 
-				switch (event.key.keysym.sym)
-				{
+				case SDL_KEYDOWN:
+					switch (event.key.keysym.sym)
+					{
 
-					case SDLK_ESCAPE:
-					case SDLK_q:
-						running = false;
-						break;
+						case SDLK_ESCAPE:
+						case SDLK_q:
+							running = false;
+							break;
 
-					case SDLK_SPACE:
-						for(int i=0;i<256*256;++i)
-						{
-							unsigned char red=rand()%256;
-							unsigned char green=rand()%256;
-							unsigned char blue=rand()%256;
-							unsigned char alpha=0;
+						case SDLK_SPACE:
+							for(int i=0;i<image_width*image_height;++i)
+							{
+								unsigned char red=rand()%256;
+								unsigned char green=rand()%256;
+								unsigned char blue=rand()%256;
+								unsigned char alpha=0;
 
-							pixels[i]=(red<<24)|(green<<16)|(blue<<8)|(alpha);
-						}
-						load_pixels(pixels,&tex,256,256);
-						break;
+								pixels[i]=(red<<24)|(green<<16)|(blue<<8)|(alpha);
+							}
+							redraw=true;
+							//load_pixels(pixels,&tex,image_width,image_height);
+							break;
 
-					case 'f':
-						fullscreen = !fullscreen;
-						if (fullscreen)
-							SDL_SetWindowFullscreen(window,SDL_WINDOW_OPENGL|SDL_WINDOW_FULLSCREEN_DESKTOP);
-						else
-							SDL_SetWindowFullscreen(window,SDL_WINDOW_OPENGL);
-						break;
+						case 'f':
+							fullscreen = !fullscreen;
+							if (fullscreen)
+								SDL_SetWindowFullscreen(window,SDL_WINDOW_OPENGL|SDL_WINDOW_FULLSCREEN_DESKTOP);
+							else
+								SDL_SetWindowFullscreen(window,SDL_WINDOW_OPENGL);
+							break;
 
-				}
+					}
+					break;
+
+				case SDL_MOUSEBUTTONDOWN:
+					SDL_GetMouseState(&mouse_x,&mouse_y);
+					if(mouse_x<image_width&&mouse_y<image_height)
+					{
+						pixels[mouse_y*image_width+mouse_x]=0;
+						printf("mouse_x: %u\nmouse_y: %u\n",mouse_x,mouse_y);
+						redraw=true;
+					}
+					break;
+
+				case SDL_QUIT:
+					running=false;
+					break;
 
 			}
-			else if (event.type==SDL_QUIT)
-				running=false;
 		}
 
 		// Render
-
+		if(redraw)
+		{
+			load_pixels(pixels,&tex,image_width,image_height);
+			redraw=false;
+		}
 		glViewport(0, 0, window_width, window_height);
 		SDL_GL_GetDrawableSize(window,&window_width,&window_height);
 
 		glClearColor(0.5,0.5,0.5,0.0);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		//draw_pixels(pixels,tex,256,256,window_height/2-256/2,window_height/2-256/2);
-		draw_pixels(pixels,tex,256,256,(window_height/2)-(256/2),(window_height/2)-(256/2));
+		//draw_pixels(pixels,tex,image_width,image_height,(window_height/2)-(image_width/2),(window_height/2)-(image_height/2));
+		draw_pixels(pixels,tex,image_width,image_height,0,0);
 
 		glFlush();
 		SDL_GL_SwapWindow(window);
