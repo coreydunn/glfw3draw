@@ -188,16 +188,16 @@ void update_mouse_pos(void)
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 
-	if(button==GLFW_MOUSE_BUTTON_LEFT&&action==GLFW_PRESS)
+	switch(button)
 	{
-		mouse_mlb=1;
-		printf("mouse_mlb: %d\n",mouse_mlb);
-	}
 
-	else if(button==GLFW_MOUSE_BUTTON_LEFT&&action==GLFW_RELEASE)
-	{
-		mouse_mlb=0;
-		printf("mouse_mlb: %d\n",mouse_mlb);
+		case GLFW_MOUSE_BUTTON_LEFT:
+			if(action==GLFW_PRESS)
+				mouse_mlb=1;
+			else if(action==GLFW_RELEASE)
+				mouse_mlb=0;
+			break;
+
 	}
 
 }
