@@ -9,12 +9,12 @@
 #include<time.h>
 #include<unistd.h>
 
-void draw_pixels(uint32_t*pixels,GLuint texture,uint32_t width,uint32_t height);
+void draw_pixels(uint32_t*pixels,GLuint texture,uint32_t width,uint32_t height,uint32_t x,uint32_t y);
 void load_pixels(uint32_t*pixels,GLuint*texture,uint32_t width,uint32_t height);
 void renderScene(void);
 
-#define WIDTH 320
-#define HEIGHT 240
+#define WIDTH 640
+#define HEIGHT 480
 
 int main (int argc, char **argv)
 {
@@ -26,9 +26,11 @@ int main (int argc, char **argv)
 	int32_t fullscreen=false;
 	int32_t pixels[256*256]={0};
 	int32_t running=true;
+	uint32_t window_width=640;
+	uint32_t window_height=480;
 
-	window = SDL_CreateWindow("OpenGL Test", 0, 0, WIDTH, HEIGHT, SDL_WINDOW_OPENGL);
-	context = SDL_GL_CreateContext(window);
+	window=SDL_CreateWindow("OpenGL Test",0,0,WIDTH,HEIGHT,SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
+	context=SDL_GL_CreateContext(window);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -36,18 +38,12 @@ int main (int argc, char **argv)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_SCISSOR_TEST);
 
 	srand(time(NULL));
 
 	for(int i=0,j=0xff;i<256*256;++i)
-	{
-		unsigned char red=rand()%256;
-		unsigned char green=rand()%256;
-		unsigned char blue=rand()%256;
-		unsigned char alpha=0;
-
-		pixels[i]=(red<<24)|(green<<16)|(blue<<8)|(alpha);
-	}
+		pixels[i]=0xffffff00;
 	glGenTextures(1,&tex);
 	load_pixels(pixels,&tex,256,256);
 
@@ -94,10 +90,16 @@ int main (int argc, char **argv)
 				running=false;
 		}
 
+		// Render
+
+		glViewport(0, 0, window_width, window_height);
+		SDL_GL_GetDrawableSize(window,&window_width,&window_height);
+
 		glClearColor(0.5,0.5,0.5,0.0);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		draw_pixels(pixels,tex,256,256);
+		//draw_pixels(pixels,tex,256,256,window_height/2-256/2,window_height/2-256/2);
+		draw_pixels(pixels,tex,256,256,(window_height/2)-(256/2),(window_height/2)-(256/2));
 
 		glFlush();
 		SDL_GL_SwapWindow(window);
@@ -106,7 +108,7 @@ int main (int argc, char **argv)
 
 }
 
-void draw_pixels(uint32_t*pixels,GLuint texture,uint32_t width,uint32_t height)
+void draw_pixels(uint32_t*pixels,GLuint texture,uint32_t width,uint32_t height,uint32_t x,uint32_t y)
 {
 	glBindTexture(GL_TEXTURE_2D,texture);
 	glEnable(GL_TEXTURE_2D);
@@ -114,17 +116,17 @@ void draw_pixels(uint32_t*pixels,GLuint texture,uint32_t width,uint32_t height)
 	glBegin(GL_QUADS);
 
 	glColor3f(1,1,1);
-	glTexCoord2f(0.0, 0.0);
-	glVertex2f(0.0, 0.0);
+	glTexCoord2f(0.0,0.0);
+	glVertex2f(x+0.0,y+0.0);
 
-	glTexCoord2f(1.0, 0.0);
-	glVertex2f(width, 0.0);
+	glTexCoord2f(1.0,0.0);
+	glVertex2f(x+width,y+0.0);
 
-	glTexCoord2f(1.0, 1.0);
-	glVertex2f(width, height);
+	glTexCoord2f(1.0,1.0);
+	glVertex2f(x+width,y+height);
 
-	glTexCoord2f(0.0, 1.0);
-	glVertex2f(0.0, height);
+	glTexCoord2f(0.0,1.0);
+	glVertex2f(x+0.0,y+height);
 
 	glEnd();
 
